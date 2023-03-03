@@ -1,0 +1,15 @@
+#!/bin/bash
+
+help() {
+  echo 'adbx <device keyword>'
+  echo 'Select last ADB device matched by keyword grep'
+  echo 'e.g. adbx pixel'
+}
+for item in $@; do 
+  if [[ $item == '-h' || $item == '-help' ]]; then 
+    help;
+    exit; 
+  fi;
+done
+
+adb devices -l | grep -E '^.+' | grep --ignore-case ${1:-''} | tail -n1 | awk '{print $1}'
