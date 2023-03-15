@@ -1,15 +1,45 @@
 #!/bin/bash
 
-help() {
-  echo 'adbx <device keyword>'
-  echo 'Select last ADB device matched by keyword grep'
-  echo 'e.g. adbx pixel'
+function list {
+    adb devices -l | grep -E '^.+'
 }
-for item in $@; do 
-  if [[ $item == '-h' || $item == '-help' ]]; then 
-    help;
-    exit; 
-  fi;
-done
 
-adb devices -l | grep -E '^.+' | grep --ignore-case ${1:-''} | tail -n1 | awk '{print $1}'
+function query {
+    list | grep --ignore-case ${1:-''} | tail -n1 | awk '{print $1}'
+}
+
+function query_as_env {
+    match=$(query $@)
+    echo ANDROID_SERIAL=$match
+}
+
+function help {
+    echo 'Usage: adbx [OPTIONS] QUERY'
+    echo
+    echo 'Select last ADB device matched by keyword grep'
+    echo
+    echo 'Options:'
+    echo '  -h, --help      Print help'
+    echo '  -l, --list      Print all adb devices'
+    echo '  -s, --serial    Print matched as value of $ANDROID_SERIAL'
+    echo '                  e.g. `adbx -s mydevice` scrcpy'
+}
+
+for item in $@; do
+    arg=$item;
+    shift;
+    if [[ $arg == '-h' || $arg == '--help' ]]; then
+        shift;
+        help $@;
+        exit;
+        elif [[ $arg == '-s' || $arg == '--serial' ]]; then
+        query_as_env $@;
+        exit;
+        elif [[ $arg == '-l' || $arg == '--list' ]]; then
+        list $@;
+        exit;
+    else
+        query $arg $@;
+        exit;
+    fi
+done
