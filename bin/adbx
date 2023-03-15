@@ -10,7 +10,7 @@ function query {
 
 function query_as_env {
     match=$(query $@)
-    echo ANDROID_SERIAL=$match
+    echo "env ANDROID_SERIAL=$match"
 }
 
 function help {
